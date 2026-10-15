@@ -49,3 +49,6 @@ Thumbs.db
 desktop.ini
 /ptxas
 /cityscapes_check.png
+
+# Claude Code project memory (local only)
+CLAUDE.md
