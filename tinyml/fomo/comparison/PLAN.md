@@ -19,7 +19,7 @@ FOMO v2 currently reaches 71.89% precision, 38.15% recall, and 49.85% F1 on City
 | M1 | ESPDet-Pico (Espressif ESP-DL) | Tiny detector built for Espressif chips | Classic-ESP32 support unverified |
 | M2 | YOLO-Fastest v2 | Smallest common YOLO-family detector | Not started |
 | M3 | YOLOv8n or YOLO11n at 160 x 160 | Standard lightweight YOLO | Not started |
-| M4 | SSDLite-MobileNetV2, alpha 0.35 | Same backbone family as FOMO, box head instead of centroid grid | Not started |
+| M4 | SSDLite-MobileNetV2, alpha 0.35 | Same backbone family as FOMO, box head instead of centroid grid | Phases 1–2 done 2026-10-15; see `README.md` |
 
 ## Pre-registered decision rule
 

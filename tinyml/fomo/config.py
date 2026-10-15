@@ -9,6 +9,8 @@ CLASS_TO_ID = {name: index for index, name in enumerate(CLASS_NAMES)}
 NUM_CLASSES = len(CLASS_NAMES)
 GRID_CUT_POINTS = {20: "block_6_expand_relu", 40: "block_3_expand_relu"}
 CITYSCAPES_CLASS_MAP = {24: 0, 25: 0, 26: 1, 27: 1, 28: 1, 31: 1, 32: 1, 33: 1}
+# The detector comparison branch shares this data pipeline; both remain confined to tinyml/fomo/.
+WRITABLE_BRANCHES = ("tinyml-fomo", "fomo-model-comparison")
 
 
 @dataclass(frozen=True)
@@ -64,8 +66,8 @@ def assert_branch():
     repo = ROOT.parent.parent
     base = ["git", "--no-optional-locks", "-c", f"safe.directory={repo.as_posix()}", "-c", "core.safecrlf=false"]
     branch = subprocess.check_output(base + ["branch", "--show-current"], cwd=repo, text=True).strip()
-    if branch != "tinyml-fomo":
-        raise RuntimeError(f"Refusing writes on branch {branch!r}; use tinyml-fomo.")
+    if branch not in WRITABLE_BRANCHES:
+        raise RuntimeError(f"Refusing writes on branch {branch!r}; use one of {WRITABLE_BRANCHES}.")
     changed = subprocess.check_output(base + ["diff", "--name-only", "HEAD"], cwd=repo, text=True)
     outside = [p for p in changed.splitlines() if not p.startswith("tinyml/fomo/")]
     untracked = subprocess.check_output(base + ["ls-files", "--others", "--exclude-standard"],
