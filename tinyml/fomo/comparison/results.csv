@@ -1,3 +1,5 @@
 model_id,model_name,input_size,params,macs,int8_bytes,precision,recall,f1,recall_lt8px,recall_ge8px,desktop_median_ms,desktop_p95_ms,g1_runtime,g2_flash_bytes,g3_arena_bytes,g4_loop_fps,notes
 M0,FOMO v2 (frozen cityscapes_v2),160,20787,16313600,70736,0.7189,0.3815,0.4985,0.3132,0.6281,2.6648,3.1767,,,,,"threshold 0.70; centroid-only output, no mAP"
+M1,ESPDet-Pico,160,361266,44226800,497424,0.8281,0.2261,0.3552,0.122,0.6021,,,,,,,"threshold 0.20; mAP@0.5 0.1735; ESP-PPQ simulator, so no desktop latency comparable to TFLite; 300-epoch cap, 1200-epoch rerun pending; extended-sweep sensitivity: threshold 0.10, P 0.7215 R 0.3709 F1 0.4899"
+M3,YOLO11n,160,2605126,203465200,2810368,0.8857,0.4149,0.565,0.305,0.8118,,,,,,,"threshold 0.20; mAP@0.5 0.2776; ESP-PPQ simulator, so no desktop latency comparable to TFLite; best epoch 99/100, possibly under-trained; extended-sweep sensitivity: threshold 0.05 (decode floor), P 0.7234 R 0.6221 F1 0.6689"
 M4,SSDLite-MobileNetV2 alpha 0.35,160,616399,36591344,1014816,0.7766,0.5168,0.6206,0.4529,0.7475,4.7741,5.4671,,,,,threshold 0.20; mAP@0.5 0.1603

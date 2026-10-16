@@ -40,6 +40,57 @@ Ranking among models that pass all gates:
 
 If a competitor passes the gates and ranks above FOMO, I report that result unchanged.
 
+## M1 ESPDet-Pico training budget (pre-registered 2026-10-15, before any M1 training)
+
+ESPDet-Pico trains from scratch with Espressif's official recipe (`esp-detection/train.py`: 1,200 epochs, batch 128, mosaic 1.0, copy-paste 0.1, close-mosaic 30, optimizer auto), at 160 x 160 on Person and Vehicle.
+Ultralytics early stopping (default patience 100 on its own validation fitness) stays enabled.
+
+1. I time one full training epoch on this laptop before choosing the budget.
+2. If 1,200 epochs fit in about 8 hours (one epoch of about 24 s or less), I run the official 1,200-epoch budget unchanged.
+3. Otherwise I cap the run at 300 epochs and record the cap as a deviation from the official recipe.
+4. If the capped run's best epoch is 250 or later, I resume training toward 1,200 epochs until early stopping or epoch 1,200.
+5. Whatever the budget, final scoring uses the shared centroid scorer and threshold rule above on INT8 outputs.
+
+Timing result (2026-10-15): one epoch took 58.7 s of training plus validation, 0.018 h in total, so 1,200 epochs would need about 21.7 h.
+Under step 3 I therefore cap M1 at 300 epochs (about 5.4 h) and record the cap as a deviation.
+Ultralytics resume cannot extend a finished schedule, so if step 4 triggers I rerun the unchanged official 1,200-epoch recipe.
+
+Outcome (2026-10-16): the 300-epoch run's best epoch was 291 by Ultralytics fitness, so step 4 triggered.
+Float validation mAP50 rose only from 0.172 (epoch 232) to 0.175 (epoch 300).
+By team decision, the 1,200-epoch rerun is scheduled last, after M3 and M2, because it is the longest job; it remains required, and the 300-epoch figures stand until it finishes.
+
+## M3 YOLO11n training and quantization (pre-registered 2026-10-16, before any M3 training)
+
+M3 is YOLO11n (Ultralytics), chosen over YOLOv8n because Espressif ships an official YOLO11n deployment path in ESP-DL.
+It follows the standard Ultralytics custom-data recipe: COCO-pretrained `yolo11n.pt`, 100 epochs, batch 16, patience 100, optimizer auto, default augmentation, imgsz 160, seed 42, CPU.
+COCO pretraining includes person and car classes, a detection-specific head start that M0 and M4 (ImageNet classification weights) do not have; I report this rather than remove the model's standard initialization.
+
+1. I time one epoch; if 100 epochs fit in about 8 hours I run them unchanged.
+2. If they do not fit, I stop and ask before choosing a budget.
+3. If the best epoch is 90 or later, I report M3 as possibly under-trained; there is no automatic extension, since 100 is the official default.
+
+Outcome (2026-10-16): one timed epoch took 72 s, but the 100-epoch run took 7.0 h (about 253 s per epoch, partly from a concurrent smoke test).
+The best epoch by Ultralytics fitness was 99 (float mAP50 0.272, mAP50-95 0.139), so under step 3 I report M3 as possibly under-trained.
+
+Export and INT8 follow Espressif's "How to deploy YOLO11n" tutorial: Detect forward overridden to six raw outputs, ONNX opset 13 with onnxsim, ESP-PPQ `espdl_setting` with percentile activation calibration and TQT optimization (800 steps, the tutorial's ESP32-S3 setting), on CPU, for target `esp32`, calibrated on FOMO v2's 100 images.
+Scoring reuses the M1 path: TorchExecutor INT8 simulation, Ultralytics DFL decoding, class-aware NMS at IoU 0.7, shared centroid scorer and threshold rule.
+
+## M2 YOLO-FastestV2 training and quantization (pre-registered 2026-10-16, before any M2 training)
+
+M2 is [dog-qiuqiu/Yolo-FastestV2](https://github.com/dog-qiuqiu/Yolo-FastestV2) at commit `ac2a5e3060bf`, cloned to `C:/Projects/Yolo-FastestV2`; the repository has no license file.
+It follows the official `data/coco.data` recipe: ImageNet-pretrained ShuffleNetV2 backbone, 300 epochs, MultiStep learning-rate drops at 150 and 250, batch 128, SGD at 0.001 with the built-in 5-epoch warm-up, built-in augmentation, 3 anchors per level.
+Changes: 2 classes, 160 x 160 input, and six anchors from the official `genanchors.py` on our training labels (1.82,5.18, 4.52,11.45, 5.99,29.58, 12.40,17.52, 19.71,42.19, 38.16,69.54).
+`run_yolofastest.py` restores NumPy aliases removed since 2022 and sets seed 42; the clone's code is unmodified, and its training writes checkpoints to the clone's `weights/` folder.
+
+1. I time one epoch; if 300 epochs fit in about 8 hours I run them unchanged, otherwise I stop and ask.
+2. The official script saves a checkpoint every 10 epochs with its own validation AP and has no best-checkpoint logic or early stopping; I select the saved checkpoint with the highest AP.
+3. If that checkpoint is from epoch 250 or later, I report M2 as possibly under-trained.
+
+M2 has no official ESP-DL recipe, so INT8 uses ESP-PPQ's default `espdl_setting` for target `esp32` with FOMO v2's 100 calibration images, and the official BGR uint8 / 255 preprocessing.
+Its decoding uses the repository's `handel_preds` and `non_max_suppression` with NMS IoU 0.4 (its `test.py` value), then the shared scorer.
+
+Ultralytics selects its checkpoint by its own box fitness, not the centroid F1 used for M0 and M4; I report this difference rather than change either tool.
+
 ## Fairness controls
 
 - Data: the v2 Cityscapes conversion and the 2,975 / 500 image IDs in `checkpoints/cityscapes_v2/split_ids.json`; no BDD100K or other external detection data.

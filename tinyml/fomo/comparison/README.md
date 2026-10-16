@@ -31,18 +31,34 @@ The 40-epoch budget does not favor M4: v2 early-stopped at epoch 19 of 20 (best 
 
 Both rows use the same rebuilt data, shared scorer, INT8 models, pre-registered threshold rule, and desktop timing on this laptop ([results.csv](results.csv)).
 
-| | M0 FOMO v2 | M4 SSDLite |
-|---|---:|---:|
-| Selected threshold | 0.70 | 0.20 (lowest swept value) |
-| Precision / recall / F1 | 71.89% / 38.15% / 49.85% | 77.66% / 51.68% / 62.06% |
-| Person recall / Vehicle recall | 32.66% / 41.64% | 34.23% / 62.79% |
-| Recall below 8 px / at least 8 px | 31.32% / 62.81% | 45.29% / 74.75% |
-| Parameters | 20,787 | 616,399 (29.7x) |
-| MACs | 16.3 M | 36.6 M (2.2x) |
-| INT8 file | 70,736 B | 1,014,816 B (14.3x) |
-| Desktop model + decode, median / p95 | 2.66 / 3.18 ms | 4.77 / 5.47 ms (1.8x) |
+| | M0 FOMO v2 | M1 ESPDet-Pico (300-epoch cap) | M4 SSDLite |
+|---|---:|---:|---:|
+| Selected threshold | 0.70 | 0.20 (lowest swept value) | 0.20 (lowest swept value) |
+| Precision / recall / F1 | 71.89% / 38.15% / 49.85% | 82.81% / 22.61% / 35.52% | 77.66% / 51.68% / 62.06% |
+| Person recall / Vehicle recall | 32.66% / 41.64% | 3.78% / 34.61% | 34.23% / 62.79% |
+| Recall below 8 px / at least 8 px | 31.32% / 62.81% | 12.20% / 60.21% | 45.29% / 74.75% |
+| mAP@0.5 (secondary) | — | 0.1735 | 0.1603 |
+| Parameters | 20,787 | 361,266 (17.4x) | 616,399 (29.7x) |
+| MACs | 16.3 M | 44.2 M (2.7x) | 36.6 M (2.2x) |
+| INT8 file | 70,736 B | 497,424 B `.espdl` (7.0x) | 1,014,816 B (14.3x) |
+| Desktop model + decode, median / p95 | 2.66 / 3.18 ms | not comparable (ESP-PPQ simulator) | 4.77 / 5.47 ms (1.8x) |
 
-M4 is more accurate than FOMO v2 on this validation split.
+M3 YOLO11n (Ultralytics 100-epoch recipe from COCO weights, best epoch 99, so possibly under-trained) scored 88.57% precision, 41.49% recall, and 56.50% F1 at threshold 0.20.
+Its person / vehicle recall is 30.62% / 48.41%, recall below 8 px / at least 8 px is 30.50% / 81.18%, and mAP@0.5 is 0.2776.
+It has 2,605,126 parameters, 203.5 M MACs (12.5x FOMO v2), and a 2,810,368-byte `.espdl` file (39.7x).
+
+M4 is the most accurate candidate on this validation split under the primary rule; FOMO v2 is the smallest and cheapest.
+M1's best epoch was 291 by Ultralytics fitness, so the PLAN.md extension rule (best epoch at least 250) calls for the unchanged 1,200-epoch recipe; these M1 figures are the 300-epoch result.
+Two exports of the same M1 weights produced `.espdl` files of 497,376 and 497,424 bytes with identical scores, so ESP-PPQ quantization is not byte-for-byte deterministic.
+
+### Threshold-range sensitivity (secondary, `threshold_sensitivity.py`)
+
+M1 and M4 both selected 0.20, the lowest value in the pre-registered sweep, so I reran the same rule over 0.05–0.95.
+M0 and M4 keep their thresholds (M4's precision falls below 70% at 0.15).
+M1 moves to threshold 0.10 with 72.15% precision, 37.09% recall, and 48.99% F1: its confidence scores are lower than the other models', and the sweep floor, not the model, set its primary F1.
+M3 also selected 0.20 under the primary rule; over 0.05–0.95 it moves to 0.05 with 72.34% precision, 62.21% recall, and 66.89% F1, the highest F1 of any candidate.
+0.05 is also the decoding score floor, so M3's extended optimum may lie lower still.
+The primary results above remain the registered ones; this analysis is reported alongside them.
 These are desktop figures; G1–G4 remain unmeasured, so no ESP32-CAM conclusion follows yet.
 The validation split selected both checkpoints and both thresholds, so neither row is an independent test.
 
@@ -55,6 +71,34 @@ The validation split selected both checkpoints and both thresholds, so neither r
   The limit is the 8-pixel anchor spacing against objects whose median person size is 2.3 x 10.8 input pixels; FOMO's centroid matching does not depend on box overlap.
 - **Sanity gate:** the 30-update M4 sanity run produced no detections at 0.60 (object probability at positive anchors median 0.33 versus 0.28 at background), so the gate is recorded as failed in `artifacts/m4-ssdlite-sanity/`.
   The synthetic run had already shown convergence; full training then reached validation F1 0.21 at 0.60 by epoch 23 and early-stopped at epoch 28 after 21 minutes on the CPU.
+
+## M1: ESPDet-Pico (Espressif esp-detection)
+
+| Item | Value |
+|---|---|
+| Source | [espressif/esp-detection](https://github.com/espressif/esp-detection) at commit `28de5902a357`, cloned to `C:/Projects/esp-detection` (outside this repository; AGPL-3.0) |
+| Environment | `.venv-espdet`: Python 3.11.9, PyTorch 2.2.0 CPU, Ultralytics 8.4.177, NumPy 1.24.4, ONNX 1.17.0, ESP-PPQ |
+| Model | `cfg/models/espdet_pico.yaml`, from scratch, nc overridden 1 -> 2; 361,266 parameters, 44.2 M MACs at 160 x 160 |
+| Data | `prepare_yolo.py`: FOMO v2's cached 160 x 160 stretched images and the same boxes, so Ultralytics never letterboxes |
+| Recipe | Official `train.py` settings at imgsz 160, seed 42; capped at 300 epochs under the PLAN.md rule (one epoch 65 s) |
+| INT8 | ESP-PPQ 8-bit for target `esp32` (no SIMD kernels), FOMO v2's 100 calibration images; `.espdl` file is 500,624 bytes |
+| Scoring | ESP-PPQ `TorchExecutor` INT8 simulation, esp-detection's decoder, Ultralytics class-aware NMS at IoU 0.7 (firmware default), then the shared scorer |
+
+Recorded deviations and caveats:
+
+- YOLO labels cannot express FOMO's ignore regions, so void and group areas train as background.
+- Ultralytics selects `best.pt` by its own box fitness, not centroid F1.
+- esp-detection's firmware keeps at most 10 boxes per frame; scoring is uncapped like M0 and M4.
+- `evaluate_espdet.py` (which produced the M1 artifacts) and its generalization `evaluate_ultralytics.py` (M3, and M1 via `--arch espdet`) shim one Ultralytics 8.4 API change (`export_onnx` return value); the exported graph is unchanged.
+- The simulator's timing is not a deployment latency, so M1 has no desktop latency column; G4 on the board decides speed.
+
+### Training-budget sensitivity (epoch-50 snapshot)
+
+Midway through the 300-epoch run I scored `last.pt` after epoch 50 through the full INT8 path (`artifacts/m1-espdet-decode-check-e50/`).
+It reached 73.00% precision, 23.01% recall, and 34.99% F1 at threshold 0.20, with mAP@0.5 0.1185 against Ultralytics' float validation mAP50 of 0.110, which also confirms the INT8 decoding.
+Float validation mAP50 rose from 0.103 at epoch 50 to 0.130 at epoch 75 while validation loss fell with training loss, so the model was not overfitting.
+A 50-epoch cap would leave M0 and M4 unchanged (they early-stopped at epochs 19 and 28) but would stop this from-scratch model while it was still improving.
+I therefore kept the pre-registered 300-epoch cap; this snapshot comes from a 300-epoch schedule (learning rate still high, mosaic still on), so it is not a true 50-epoch result.
 
 ## Environment on this laptop
 
