@@ -47,6 +47,12 @@ M3 YOLO11n (Ultralytics 100-epoch recipe from COCO weights, best epoch 99, so po
 Its person / vehicle recall is 30.62% / 48.41%, recall below 8 px / at least 8 px is 30.50% / 81.18%, and mAP@0.5 is 0.2776.
 It has 2,605,126 parameters, 203.5 M MACs (12.5x FOMO v2), and a 2,810,368-byte `.espdl` file (39.7x).
 
+M2 YOLO-FastestV2 (official 300-epoch recipe, 75 minutes; highest-AP checkpoint epoch 180) scored 70.16% precision, 43.13% recall, and 53.42% F1 at threshold 0.30, inside the sweep range.
+Its person / vehicle recall is 30.32% / 51.29%, recall below 2 px / 2–8 px / at least 8 px is 25.11% / 44.46% / 61.85%, and mAP@0.5 is only 0.0264: its centers are good but its boxes are poorly localized.
+It has 237,401 parameters, 21.3 M MACs (1.3x FOMO v2), and a 420,368-byte `.espdl` file (5.9x).
+It is the closest challenger to FOMO v2: 3.6 F1 points higher for 1.3x the compute.
+Its evaluation calibrates one image per step (100 steps, all 100 images) because the official export fixes batch size 1 inside ShuffleNetV2's channel-shuffle reshapes.
+
 M4 is the most accurate candidate on this validation split under the primary rule; FOMO v2 is the smallest and cheapest.
 M1's best epoch was 291 by Ultralytics fitness, so the PLAN.md extension rule (best epoch at least 250) calls for the unchanged 1,200-epoch recipe; these M1 figures are the 300-epoch result.
 Two exports of the same M1 weights produced `.espdl` files of 497,376 and 497,424 bytes with identical scores, so ESP-PPQ quantization is not byte-for-byte deterministic.
@@ -90,6 +96,7 @@ Recorded deviations and caveats:
 - Ultralytics selects `best.pt` by its own box fitness, not centroid F1.
 - esp-detection's firmware keeps at most 10 boxes per frame; scoring is uncapped like M0 and M4.
 - `evaluate_espdet.py` (which produced the M1 artifacts) and its generalization `evaluate_ultralytics.py` (M3, and M1 via `--arch espdet`) shim one Ultralytics 8.4 API change (`export_onnx` return value); the exported graph is unchanged.
+  Rerunning M1 through `evaluate_ultralytics.py --arch espdet` reproduced the identical sweep, selected point, and mAP (`artifacts/m1-espdet-evaluation-regression/`); only the `.espdl` size moved by 64 bytes.
 - The simulator's timing is not a deployment latency, so M1 has no desktop latency column; G4 on the board decides speed.
 
 ### Training-budget sensitivity (epoch-50 snapshot)
@@ -99,6 +106,44 @@ It reached 73.00% precision, 23.01% recall, and 34.99% F1 at threshold 0.20, wit
 Float validation mAP50 rose from 0.103 at epoch 50 to 0.130 at epoch 75 while validation loss fell with training loss, so the model was not overfitting.
 A 50-epoch cap would leave M0 and M4 unchanged (they early-stopped at epochs 19 and 28) but would stop this from-scratch model while it was still improving.
 I therefore kept the pre-registered 300-epoch cap; this snapshot comes from a 300-epoch schedule (learning rate still high, mosaic still on), so it is not a true 50-epoch result.
+
+## Phase 3 pre-board gate checks (2026-10-16)
+
+**G1 runtime support (static).** Every operator in each INT8 graph is on its runtime's supported list:
+
+| Model | Runtime | Operators |
+|---|---|---|
+| M0 FOMO v2 | TFLite Micro | ADD, CONV_2D, DEPTHWISE_CONV_2D, MUL, SOFTMAX |
+| M4 SSDLite | TFLite Micro | ADD, CONCATENATION, CONV_2D, DEPTHWISE_CONV_2D, MUL, RESHAPE, SOFTMAX |
+| M1 ESPDet-Pico | ESP-DL | Conv, Relu, Split, Add, Concat, MaxPool, Resize |
+| M3 YOLO11n | ESP-DL | Conv, Sigmoid, Mul, Split, Add, Concat, MaxPool, Reshape, Transpose, MatMul, Softmax, Resize |
+| M2 YOLO-FastestV2 | ESP-DL | Conv, Relu, MaxPool, Concat, Reshape, Transpose, Gather, Resize, Sigmoid, Softmax |
+
+ESP-DL lists plain `esp32` as a target without PIE vector instructions, so its operators run as C kernels ([operator support](https://github.com/espressif/esp-dl/blob/master/operator_support_state.md)).
+A static pass does not prove the build links, allocates, or runs; the board build confirms G1.
+
+**G3 RAM (estimate, `estimate_memory.py`).** Peak INT8 activation memory with a greedy first-fit planner, weights excluded:
+
+| Model | Peak activations | Largest tensor |
+|---|---:|---:|
+| M0 FOMO v2 | 384,000 B | 307,200 B |
+| M4 SSDLite | 384,000 B | 307,200 B |
+| M3 YOLO11n | 307,200 B | 102,400 B |
+| M2 YOLO-FastestV2 | 307,200 B | 153,600 B |
+| M1 ESPDet-Pico | 204,800 B | 102,400 B |
+
+Peak activation memory follows the 160 x 160 input and early layers, not model size: FOMO and SSDLite share the MobileNetV2 stem, whose 80 x 80 x 48 expansion tensor is the largest buffer of any model.
+Every candidate exceeds the classic ESP32's free internal SRAM and fits easily in the AI-Thinker board's 4 MB PSRAM, so this estimate does not separate the candidates; runtime scratch and persistent allocations still need board measurement.
+
+**G2 flash (not yet built).** INT8 model files range from 70,736 B (M0) to 2,810,368 B (M3) against 4 MB of flash shared with the application, camera, and Wi-Fi code.
+`idf.py size` needs ESP-IDF, which this laptop does not have (see open items).
+
+## Open items for Angel and the team
+
+- **ESP-IDF install (disk space):** drive C: had 12 GB free (98% full) on 2026-10-16; ESP-IDF needs about 4–5 GB, so I did not install it. G2 builds wait for that decision.
+- **G4 threshold:** 3 FPS remains a working value pending team and Ms. Capule's confirmation.
+- **Licensing for Commercialization:** ESPDet-Pico and YOLO11n are AGPL-3.0 (Ultralytics); YOLO-FastestV2 has no license file.
+- **Hardware:** Phase 4 needs a working ESP32-CAM; Phase 5 needs recorded, labeled walking footage.
 
 ## Environment on this laptop
 

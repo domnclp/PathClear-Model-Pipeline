@@ -16,9 +16,9 @@ FOMO v2 currently reaches 71.89% precision, 38.15% recall, and 49.85% F1 on City
 | ID | Model | Reason for inclusion | Status |
 |---|---|---|---|
 | M0 | FOMO v2 (`checkpoints/cityscapes_v2/`) | Baseline, used unchanged | Frozen; 20,787 parameters; 70,736-byte INT8 file |
-| M1 | ESPDet-Pico (Espressif ESP-DL) | Tiny detector built for Espressif chips | Classic-ESP32 support unverified |
-| M2 | YOLO-Fastest v2 | Smallest common YOLO-family detector | Not started |
-| M3 | YOLOv8n or YOLO11n at 160 x 160 | Standard lightweight YOLO | Not started |
+| M1 | ESPDet-Pico (Espressif ESP-DL) | Tiny detector built for Espressif chips | 300-epoch result scored; 1,200-epoch rerun running |
+| M2 | YOLO-Fastest v2 | Smallest common YOLO-family detector | Phases 1–2 done 2026-10-16; see `README.md` |
+| M3 | YOLOv8n or YOLO11n at 160 x 160 | Standard lightweight YOLO | YOLO11n; phases 1–2 done 2026-10-16 |
 | M4 | SSDLite-MobileNetV2, alpha 0.35 | Same backbone family as FOMO, box head instead of centroid grid | Phases 1–2 done 2026-10-15; see `README.md` |
 
 ## Pre-registered decision rule
@@ -85,6 +85,11 @@ Changes: 2 classes, 160 x 160 input, and six anchors from the official `genancho
 1. I time one epoch; if 300 epochs fit in about 8 hours I run them unchanged, otherwise I stop and ask.
 2. The official script saves a checkpoint every 10 epochs with its own validation AP and has no best-checkpoint logic or early stopping; I select the saved checkpoint with the highest AP.
 3. If that checkpoint is from epoch 250 or later, I report M2 as possibly under-trained.
+
+Timing (2026-10-16): one training epoch took 40 s (23 batches of 128), so 300 epochs plus the 30 built-in evaluations fit in about 4–5 h; under step 1 I run the official 300 epochs unchanged.
+`run_yolofastest.py` also shims `Tensor.clamp_` for integer tensors with float bounds (`utils/loss.py`), which torch 1.9 allowed and torch 2.2 rejects; casting the bounds reproduces the original result.
+
+Outcome (2026-10-16): the 300 epochs took 75 minutes; the highest saved AP was 0.0351 at epoch 180, so under step 3 M2 is not flagged as under-trained.
 
 M2 has no official ESP-DL recipe, so INT8 uses ESP-PPQ's default `espdl_setting` for target `esp32` with FOMO v2's 100 calibration images, and the official BGR uint8 / 255 preprocessing.
 Its decoding uses the repository's `handel_preds` and `non_max_suppression` with NMS IoU 0.4 (its `test.py` value), then the shared scorer.

@@ -29,5 +29,17 @@ if __name__ == "__main__":
     random.seed(42)
     np.random.seed(42)
     torch.manual_seed(42)
+    # torch 1.9 allowed integer tensors to clamp_ against float bounds (utils/loss.py build_target);
+    # torch >= 1.12 raises. Casting the bounds to the tensor's dtype reproduces the 1.9 result exactly.
+    original_clamp_ = torch.Tensor.clamp_
+
+    def clamp_(self, min=None, max=None):
+        if not self.is_floating_point():
+            def cast(v):
+                return v.to(self.dtype) if torch.is_tensor(v) else (None if v is None else int(v))
+            min, max = cast(min), cast(max)
+        return original_clamp_(self, min, max)
+
+    torch.Tensor.clamp_ = clamp_
     sys.argv = [str(script)] + sys.argv[2:]
     runpy.run_path(str(script), run_name="__main__")

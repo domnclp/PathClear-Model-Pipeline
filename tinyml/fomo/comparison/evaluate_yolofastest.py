@@ -86,8 +86,14 @@ def main():
     from esp_ppq.api import espdl_quantize_onnx
     from esp_ppq.executor import TorchExecutor
     from onnxsim import simplify
+    # The clone's model/ and utils/ are namespace packages (no __init__.py), which lose to FOMO's
+    # model.py on sys.path; hide the FOMO folders while importing them.
+    saved_path = sys.path[:]
+    hidden = {common.FOMO_DIR.resolve(), common.COMPARISON_DIR.resolve()}
+    sys.path = [p for p in sys.path if not p or Path(p).resolve() not in hidden]
     import model.detector
     import utils.utils as yf_utils
+    sys.path = saved_path
     cfg = yf_utils.load_datafile(str(data))
     anchors = torch.tensor(np.array(cfg["anchors"], dtype=np.float32).reshape(2, cfg["anchor_num"], 2))
 
@@ -112,10 +118,12 @@ def main():
         return torch.from_numpy(np.ascontiguousarray(images[..., ::-1].transpose(0, 3, 1, 2)).astype(np.float32) / 255)
 
     calibration, _ = load_arrays(chosen)
-    batches = [bgr(calibration[i:i + 32]) for i in range(0, len(calibration), 32)]
+    # The official export bakes batch size 1 into ShuffleNetV2's channel-shuffle reshapes, so calibration
+    # runs one image per step; 100 steps still cover all 100 calibration images, like every other model.
+    batches = [bgr(calibration[i:i + 1]) for i in range(len(calibration))]
     espdl_path = directory / f"yolofastestv2_160_160_pathclear_{args.target}.espdl"
     graph = espdl_quantize_onnx(onnx_import_file=str(onnx_path), espdl_export_file=str(espdl_path),
-                                calib_dataloader=batches, calib_steps=32,
+                                calib_dataloader=batches, calib_steps=len(batches),
                                 input_shape=[1, 3, cfg["height"], cfg["width"]], target=args.target, num_of_bits=8,
                                 collate_fn=lambda b: b.to("cpu"), setting=QuantizationSettingFactory.espdl_setting(),
                                 device="cpu", error_report=True, skip_export=False, export_test_values=False, verbose=0)

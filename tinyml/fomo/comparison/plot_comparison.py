@@ -13,12 +13,15 @@ import common  # noqa: F401,E402
 from config import ROOT  # noqa: E402
 
 ART = ROOT / "artifacts"
-# Validated categorical slots 1-4 in bar order (blue, orange, aqua, yellow), adjacent pairs: CVD dE >= 9.1,
-# normal-vision dE >= 22.9. Aqua and yellow are below 3:1 on the light surface, so every mark carries a label.
+# Validated categorical slots 1-5 in bar order (blue, orange, aqua, yellow, magenta), adjacent pairs: CVD dE >= 9.1,
+# normal-vision dE >= 19.6. Aqua, yellow and magenta are below 3:1 on the light surface, so every mark carries a label.
 MODELS = (("M0", "m0-fomo-evaluation", "FOMO v2", "#2a78d6"),
           ("M4", "m4-ssdlite-evaluation", "SSDLite-MobileNetV2", "#eb6834"),
           ("M1", "m1-espdet-evaluation", "ESPDet-Pico (300 ep.)", "#1baf7a"),
-          ("M3", "m3-yolo11n-evaluation", "YOLO11n", "#eda100"))
+          ("M3", "m3-yolo11n-evaluation", "YOLO11n", "#eda100"),
+          ("M2", "m2-yolofastest-evaluation", "YOLO-FastestV2", "#e87ba4"))
+# Scatter label offsets (points) where the default upper-right position collides with a neighbour.
+LABEL_OFFSETS = {"M0": (8, -26)}
 INK, MUTED, GRID, SURFACE = "#0b0b0b", "#52514e", "#e4e3df", "#fcfcfb"
 
 
@@ -68,7 +71,7 @@ def main():
     labels = {m: f"{name} (threshold {rows[m][1]['threshold']:.2f})" for m, _, name, _ in MODELS}
     pct = lambda v: f"{v * 100:.1f}%"  # noqa: E731
 
-    fig, axes = plt.subplots(1, 3, figsize=(15, 4.8), facecolor=SURFACE, gridspec_kw={"width_ratios": [1.2, 1.2, 1]})
+    fig, axes = plt.subplots(1, 3, figsize=(16, 5.0), facecolor=SURFACE, gridspec_kw={"width_ratios": [1.2, 1.2, 1]})
     bars(axes[0], ["Precision", "Recall", "F1"],
          {m: [rows[m][0][k] for k in ("precision", "recall", "f1")] for m in rows}, colors, pct, "Cityscapes validation")
     style(axes[0], "a. Detection accuracy")
@@ -82,17 +85,17 @@ def main():
     ax = axes[2]
     others = [m for m in rows if m != "M0"]
     for i, model in enumerate(others):
-        offset = (i - (len(others) - 1) / 2) * 0.26
+        offset = (i - (len(others) - 1) / 2) * 0.2
         for y, (key, _) in enumerate(cost_keys):
             value, base = rows[model][0][key], rows["M0"][0][key]
             if value is None:
                 ax.text(1.08, y + offset, "n/a (simulator)", va="center", fontsize=6, color=MUTED)
                 continue
             ratio = value / base
-            ax.barh(y + offset, ratio, 0.24, color=colors[model], zorder=3)
+            ax.barh(y + offset, ratio, 0.18, color=colors[model], zorder=3)
             ax.text(ratio * 1.08, y + offset, f"{ratio:.1f}x", va="center", fontsize=7, color=INK)
     ax.axvline(1, color=colors["M0"], linewidth=2, zorder=4)
-    ax.text(1.08, -0.68, "FOMO v2 = 1x", color=INK, fontsize=8, va="center")
+    ax.text(1.08, -0.72, "FOMO v2 = 1x", color=INK, fontsize=8, va="center")
     ax.set_xscale("log")
     ax.set_xlim(0.8, 150)
     ax.xaxis.set_major_locator(matplotlib.ticker.FixedLocator([1, 2, 5, 10, 20, 50, 100]))
@@ -106,12 +109,12 @@ def main():
     ax.grid(axis="y", visible=False)
 
     handles = [matplotlib.patches.Patch(color=colors[m], label=labels[m]) for m in rows]
-    fig.legend(handles=handles, loc="upper center", ncol=4, frameon=False, fontsize=9, bbox_to_anchor=(0.5, 1.02))
+    fig.legend(handles=handles, loc="upper center", ncol=5, frameon=False, fontsize=9, bbox_to_anchor=(0.5, 1.02))
     fig.text(0.01, -0.03, "Same rebuilt Cityscapes data, INT8 models, shared centroid scorer and pre-registered threshold "
              "rule (0.20-0.95, precision >= 70%). Validation split also selected checkpoints and thresholds: not an "
              "independent test.\nLatency is desktop CPU (1 thread), not ESP32. ESPDet-Pico INT8 runs in the ESP-PPQ "
-             "simulator, as does YOLO11n. Extended sweep to 0.05: ESPDet-Pico F1 49.0% (0.10), YOLO11n F1 66.9% (0.05); "
-             "M0 and M4 unchanged.",
+             "simulator, as do YOLO11n and YOLO-FastestV2. Extended sweep to 0.05: ESPDet-Pico F1 49.0% (0.10), "
+             "YOLO11n F1 66.9% (0.05); M0, M2 and M4 unchanged.",
              fontsize=8, color=MUTED)
     fig.tight_layout(rect=(0, 0, 1, 0.93))
     output = Path(args.output)
@@ -124,7 +127,7 @@ def main():
 
 def tradeoff(rows, colors, output):
     """F1 against compute: filled = pre-registered rule, hollow = extended-sweep sensitivity."""
-    sensitivity = json.loads((ART / "threshold-sensitivity-m3" / "sensitivity.json").read_text(encoding="utf-8"))
+    sensitivity = json.loads((ART / "threshold-sensitivity-all" / "sensitivity.json").read_text(encoding="utf-8"))
     names = {m: name for m, _, name, _ in MODELS}
     fig, ax = plt.subplots(figsize=(7.5, 4.8), facecolor=SURFACE)
     for model, (row, _) in rows.items():
@@ -136,7 +139,7 @@ def tradeoff(rows, colors, output):
             ax.scatter([x], [extended], s=70, facecolor=SURFACE, edgecolor=colors[model], linewidth=2, zorder=4)
         ax.scatter([x], [primary], s=90, color=colors[model], edgecolor=SURFACE, linewidth=2, zorder=5)
         ax.annotate(f"{names[model]}\n{row['int8_bytes'] / 1000:,.0f} KB INT8", (x, max(primary, extended)),
-                    xytext=(8, 6), textcoords="offset points", fontsize=8, color=INK)
+                    xytext=LABEL_OFFSETS.get(model, (8, 6)), textcoords="offset points", fontsize=8, color=INK)
     ax.set_xscale("log")
     ax.set_xlim(10, 400)
     ax.xaxis.set_major_locator(matplotlib.ticker.FixedLocator([10, 20, 50, 100, 200]))

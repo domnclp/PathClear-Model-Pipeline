@@ -17,7 +17,7 @@ from inference import decode_grid
 
 EXTENDED = tuple(p / 100 for p in range(5, 96, 5))
 ART = ROOT / "artifacts"
-SAVED = {"M4": "m4-ssdlite-evaluation", "M1": "m1-espdet-evaluation", "M3": "m3-yolo11n-evaluation"}
+SAVED = {"M4": "m4-ssdlite-evaluation", "M1": "m1-espdet-evaluation", "M3": "m3-yolo11n-evaluation", "M2": "m2-yolofastest-evaluation"}
 
 
 def main():
