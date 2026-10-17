@@ -25,3 +25,6 @@ __pycache__/
 !/checkpoints/cityscapes_v2/source_artifacts.json
 !/checkpoints/cityscapes_v2/split_ids.json
 !/checkpoints/cityscapes_v2/verification.json
+
+# Generated report PDFs stay out of the repository; rebuild with comparison/make_report.py.
+/comparison/*.pdf
