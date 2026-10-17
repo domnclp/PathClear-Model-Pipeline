@@ -17,11 +17,11 @@ ART = ROOT / "artifacts"
 # normal-vision dE >= 19.6. Aqua, yellow and magenta are below 3:1 on the light surface, so every mark carries a label.
 MODELS = (("M0", "m0-fomo-evaluation", "FOMO v2", "#2a78d6"),
           ("M4", "m4-ssdlite-evaluation", "SSDLite-MobileNetV2", "#eb6834"),
-          ("M1", "m1-espdet-evaluation", "ESPDet-Pico (300 ep.)", "#1baf7a"),
+          ("M1", "m1-espdet-evaluation-1200", "ESPDet-Pico", "#1baf7a"),
           ("M3", "m3-yolo11n-evaluation", "YOLO11n", "#eda100"),
           ("M2", "m2-yolofastest-evaluation", "YOLO-FastestV2", "#e87ba4"))
 # Scatter label offsets (points) where the default upper-right position collides with a neighbour.
-LABEL_OFFSETS = {"M0": (8, -26)}
+LABEL_OFFSETS = {"M0": (8, -26), "M1": (12, -30)}
 INK, MUTED, GRID, SURFACE = "#0b0b0b", "#52514e", "#e4e3df", "#fcfcfb"
 
 
@@ -113,7 +113,7 @@ def main():
     fig.text(0.01, -0.03, "Same rebuilt Cityscapes data, INT8 models, shared centroid scorer and pre-registered threshold "
              "rule (0.20-0.95, precision >= 70%). Validation split also selected checkpoints and thresholds: not an "
              "independent test.\nLatency is desktop CPU (1 thread), not ESP32. ESPDet-Pico INT8 runs in the ESP-PPQ "
-             "simulator, as do YOLO11n and YOLO-FastestV2. Extended sweep to 0.05: ESPDet-Pico F1 49.0% (0.10), "
+             "simulator, as do YOLO11n and YOLO-FastestV2. Extended sweep to 0.05: ESPDet-Pico F1 59.4% (0.10), "
              "YOLO11n F1 66.9% (0.05); M0, M2 and M4 unchanged.",
              fontsize=8, color=MUTED)
     fig.tight_layout(rect=(0, 0, 1, 0.93))
@@ -127,7 +127,7 @@ def main():
 
 def tradeoff(rows, colors, output):
     """F1 against compute: filled = pre-registered rule, hollow = extended-sweep sensitivity."""
-    sensitivity = json.loads((ART / "threshold-sensitivity-all" / "sensitivity.json").read_text(encoding="utf-8"))
+    sensitivity = json.loads((ART / "threshold-sensitivity-final" / "sensitivity.json").read_text(encoding="utf-8"))
     names = {m: name for m, _, name, _ in MODELS}
     fig, ax = plt.subplots(figsize=(7.5, 4.8), facecolor=SURFACE)
     for model, (row, _) in rows.items():

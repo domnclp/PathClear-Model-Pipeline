@@ -16,7 +16,7 @@ FOMO v2 currently reaches 71.89% precision, 38.15% recall, and 49.85% F1 on City
 | ID | Model | Reason for inclusion | Status |
 |---|---|---|---|
 | M0 | FOMO v2 (`checkpoints/cityscapes_v2/`) | Baseline, used unchanged | Frozen; 20,787 parameters; 70,736-byte INT8 file |
-| M1 | ESPDet-Pico (Espressif ESP-DL) | Tiny detector built for Espressif chips | 300-epoch result scored; 1,200-epoch rerun running |
+| M1 | ESPDet-Pico (Espressif ESP-DL) | Tiny detector built for Espressif chips | Phases 1–2 done 2026-10-17 (1,200-epoch recipe); see `README.md` |
 | M2 | YOLO-Fastest v2 | Smallest common YOLO-family detector | Phases 1–2 done 2026-10-16; see `README.md` |
 | M3 | YOLOv8n or YOLO11n at 160 x 160 | Standard lightweight YOLO | YOLO11n; phases 1–2 done 2026-10-16 |
 | M4 | SSDLite-MobileNetV2, alpha 0.35 | Same backbone family as FOMO, box head instead of centroid grid | Phases 1–2 done 2026-10-15; see `README.md` |
@@ -58,6 +58,8 @@ Ultralytics resume cannot extend a finished schedule, so if step 4 triggers I re
 Outcome (2026-10-16): the 300-epoch run's best epoch was 291 by Ultralytics fitness, so step 4 triggered.
 Float validation mAP50 rose only from 0.172 (epoch 232) to 0.175 (epoch 300).
 By team decision, the 1,200-epoch rerun is scheduled last, after M3 and M2, because it is the longest job; it remains required, and the 300-epoch figures stand until it finishes.
+Rerun (2026-10-17): the unchanged 1,200-epoch recipe took 12.9 h; its best epoch was 1,195 (float mAP50 0.250, mAP50-95 0.118), so the model was still improving at the official schedule's end.
+The 1,200-epoch result replaces the 300-epoch figures as M1's primary result; there is no further extension beyond the official recipe.
 
 ## M3 YOLO11n training and quantization (pre-registered 2026-10-16, before any M3 training)
 
