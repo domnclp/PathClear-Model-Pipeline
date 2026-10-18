@@ -1,0 +1,150 @@
+{
+  "checkpoint": "/home/nacsi/pathclear_runs/kpv_ft_10ep/best.keras",
+  "checkpoint_sha256": "ab0b229f97528f3f7b414613d265f2841f1a0799055105c7516ad92b431a67d0",
+  "compare": {
+    "/home/nacsi/pathclear_runs/shared_bnd_epoch1_20261006/best.keras": "e8b28e2e4f39a843d80fbb13935110d8ef457838d8972691cff5b63eaf8e83ef",
+    "/home/nacsi/pathclear_runs/kpv_teacher_10ep/best.keras": "d2c29efb76096f86d95e441feb518ca5fd501752ca0cea4996ee4280c8620912"
+  },
+  "grid": "/mnt/c/Users/ALLAN/dev/PathClear-Model-Pipeline/visuals/kpv_ft_ep4/unlabeled/comparison.jpg",
+  "images": [
+    {
+      "image": "/mnt/c/Users/ALLAN/dev/PathClear-Model-Pipeline/visuals/kpv_full_10ep/unlabeled/originals/residential_sidewalk.png",
+      "size": [
+        480,
+        270
+      ],
+      "crosswalk_share": 0.004035493827160494,
+      "class_share": {
+        "Road": 0.48604166666666665,
+        "Sidewalk": 0.013464506172839506,
+        "Person": 0.01462962962962963,
+        "Vehicle": 0.07436728395061729,
+        "Boundary": 0.08828703703703704,
+        "Obstacle": 0.07692901234567902,
+        "Vegetation": 0.24224537037037036,
+        "Stairs": 0.0,
+        "Crosswalk": 0.004035493827160494,
+        "Uneven Pavement": 0.0
+      },
+      "class_share_compare": {
+        "/home/nacsi/pathclear_runs/shared_bnd_epoch1_20261006/best.keras": {
+          "Road": 0.4561728395061728,
+          "Sidewalk": 0.016828703703703703,
+          "Person": 0.03503086419753086,
+          "Vehicle": 0.06794753086419753,
+          "Boundary": 0.08613425925925926,
+          "Obstacle": 0.11612654320987655,
+          "Vegetation": 0.22175925925925927,
+          "Stairs": 0.0,
+          "Crosswalk": 0.0,
+          "Uneven Pavement": 0.0
+        },
+        "/home/nacsi/pathclear_runs/kpv_teacher_10ep/best.keras": {
+          "Road": 0.4234104938271605,
+          "Sidewalk": 0.014158950617283951,
+          "Person": 0.01912037037037037,
+          "Vehicle": 0.057708333333333334,
+          "Boundary": 0.10102623456790123,
+          "Obstacle": 0.10314814814814814,
+          "Vegetation": 0.20798611111111112,
+          "Stairs": 0.0,
+          "Crosswalk": 0.07344135802469136,
+          "Uneven Pavement": 0.0
+        }
+      }
+    },
+    {
+      "image": "/mnt/c/Users/ALLAN/dev/PathClear-Model-Pipeline/visuals/kpv_full_10ep/unlabeled/originals/zebra_closeup.png",
+      "size": [
+        480,
+        270
+      ],
+      "crosswalk_share": 0.4548996913580247,
+      "class_share": {
+        "Road": 0.33827160493827163,
+        "Sidewalk": 7.716049382716049e-05,
+        "Person": 0.017507716049382716,
+        "Vehicle": 0.17988425925925927,
+        "Boundary": 0.00603395061728395,
+        "Obstacle": 0.0010570987654320988,
+        "Vegetation": 0.0022685185185185187,
+        "Stairs": 0.0,
+        "Crosswalk": 0.4548996913580247,
+        "Uneven Pavement": 0.0
+      },
+      "class_share_compare": {
+        "/home/nacsi/pathclear_runs/shared_bnd_epoch1_20261006/best.keras": {
+          "Road": 0.7261882716049383,
+          "Sidewalk": 0.00019290123456790122,
+          "Person": 0.014822530864197532,
+          "Vehicle": 0.22478395061728396,
+          "Boundary": 0.030810185185185184,
+          "Obstacle": 0.0008796296296296296,
+          "Vegetation": 0.002322530864197531,
+          "Stairs": 0.0,
+          "Crosswalk": 0.0,
+          "Uneven Pavement": 0.0
+        },
+        "/home/nacsi/pathclear_runs/kpv_teacher_10ep/best.keras": {
+          "Road": 0.31179012345679014,
+          "Sidewalk": 0.0,
+          "Person": 0.012114197530864198,
+          "Vehicle": 0.10277006172839506,
+          "Boundary": 0.00603395061728395,
+          "Obstacle": 7.71604938271605e-06,
+          "Vegetation": 0.0001388888888888889,
+          "Stairs": 0.0,
+          "Crosswalk": 0.5671450617283951,
+          "Uneven Pavement": 0.0
+        }
+      }
+    },
+    {
+      "image": "/mnt/c/Users/ALLAN/dev/PathClear-Model-Pipeline/visuals/kpv_full_10ep/unlabeled/originals/intersection_dusk.png",
+      "size": [
+        480,
+        270
+      ],
+      "crosswalk_share": 0.33868827160493825,
+      "class_share": {
+        "Road": 0.11498456790123457,
+        "Sidewalk": 0.0,
+        "Person": 0.030339506172839505,
+        "Vehicle": 0.03202160493827161,
+        "Boundary": 0.04043981481481482,
+        "Obstacle": 0.059537037037037034,
+        "Vegetation": 0.3839891975308642,
+        "Stairs": 0.0,
+        "Crosswalk": 0.33868827160493825,
+        "Uneven Pavement": 0.0
+      },
+      "class_share_compare": {
+        "/home/nacsi/pathclear_runs/shared_bnd_epoch1_20261006/best.keras": {
+          "Road": 0.3623996913580247,
+          "Sidewalk": 0.00016975308641975308,
+          "Person": 0.10736882716049383,
+          "Vehicle": 0.044529320987654324,
+          "Boundary": 0.03417438271604938,
+          "Obstacle": 0.09763888888888889,
+          "Vegetation": 0.3537191358024691,
+          "Stairs": 0.0,
+          "Crosswalk": 0.0,
+          "Uneven Pavement": 0.0
+        },
+        "/home/nacsi/pathclear_runs/kpv_teacher_10ep/best.keras": {
+          "Road": 0.014035493827160494,
+          "Sidewalk": 0.0,
+          "Person": 0.03529320987654321,
+          "Vehicle": 0.028526234567901234,
+          "Boundary": 0.041103395061728394,
+          "Obstacle": 0.08026234567901235,
+          "Vegetation": 0.3538271604938272,
+          "Stairs": 0.0,
+          "Crosswalk": 0.44695216049382713,
+          "Uneven Pavement": 0.0
+        }
+      }
+    }
+  ],
+  "note": "Unlabeled images; shares describe predictions, not accuracy. Inputs are stretched to 512x1024 as in training."
+}

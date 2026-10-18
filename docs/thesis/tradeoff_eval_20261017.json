@@ -1,0 +1,271 @@
+{
+  "protocol": {
+    "dataset": "Cityscapes gtFine val (labelIds)",
+    "frames": 500,
+    "scored_classes": {
+      "Road": [
+        7
+      ],
+      "Sidewalk": [
+        8
+      ],
+      "Boundary": [
+        11,
+        12,
+        13
+      ]
+    },
+    "evaluation_grid": [
+      512,
+      1024
+    ],
+    "note": "Score MicroSeg and Fast-SCNN checkpoints on one shared protocol.\n\nBoth model families are judged on the classes they were both trained on,\ntaken from the original Cityscapes gtFine labelIds masks:\n\n    Road (labelId 7), Sidewalk (8), Boundary (building 11, wall 12, fence 13)\n\nEvery other pixel (sky, vegetation, people, vehicles, void, ...) is excluded\nfrom scoring for every model. Predictions are mapped into the same space:\n\n    Fast-SCNN:  0 Road -> Road, 1 Sidewalk -> Sidewalk, 4 Boundary -> Boundary,\n                8 Crosswalk -> Crosswalk, any other class -> Other\n    MicroSeg:   Non-walkable -> Road, Walkable -> Sidewalk,\n                Boundary -> Boundary, Crosswalk -> Crosswalk\n\nCrosswalk and Other predictions on scored pixels are errors. Each model gets\nthe input preprocessing it was trained with (bilinear resize of the full\nframe to its input size, divide by 255). Ground truth is resized once, by\nnearest neighbor, to the 512x1024 evaluation grid; MicroSeg's 96x96 output\nis upsampled to that grid by nearest neighbor, so every model is scored on\nthe same pixels. A secondary score scores MicroSeg on a 96x96 nearest-neighbor\nground truth (its native output grid).\n\nMetrics over the three scored classes:\n- mIoU: mean of per-class IoU (TP / (GT + predicted - TP)).\n- Pixel accuracy: correctly labelled scored pixels / scored pixels.\n- Road-as-sidewalk error rate: ground-truth Road pixels predicted Sidewalk /\n  ground-truth Road pixels. This is the dangerous error for a mobility aid:\n  telling the user a road surface is walkable sidewalk.\n95% confidence intervals come from a bootstrap over frames.\n\nOptional --kpv-split-manifest adds full-frame Crosswalk IoU on the real KPV\nvalidation frames as a supplementary row.\n\nRead-only with respect to every checkpoint (hashed before and after).\n"
+  },
+  "models": [
+    {
+      "name": "fast_scnn_pre_kpv",
+      "family": "fast",
+      "checkpoint": "/home/nacsi/pathclear_runs/shared_bnd_epoch1_20261006/best.keras",
+      "sha256": "e8b28e2e4f39a843d80fbb13935110d8ef457838d8972691cff5b63eaf8e83ef",
+      "params": 1159546,
+      "file_bytes": 5161327,
+      "input": [
+        512,
+        1024
+      ]
+    },
+    {
+      "name": "fast_scnn_kpv_ft_ep9",
+      "family": "fast",
+      "checkpoint": "/home/nacsi/pathclear_runs/kpv_ft_final4/best.keras",
+      "sha256": "7962e45afa6580cd092b373535aa6efade82fe3db2406ba44fd60b9c58126423",
+      "params": 1159546,
+      "file_bytes": 14082843,
+      "input": [
+        512,
+        1024
+      ]
+    },
+    {
+      "name": "microseg_s800",
+      "family": "micro",
+      "checkpoint": "/home/nacsi/microseg_runs/pilot-neg025-s800-augoff-fixed-20261006/best.keras",
+      "sha256": "936b19b1db976968a0550659843584df6b74a40065e85e8839e2144ceec3f24a",
+      "params": 61924,
+      "file_bytes": 987553,
+      "input": [
+        96,
+        96
+      ]
+    }
+  ],
+  "cityscapes": {
+    "fast_scnn_pre_kpv": {
+      "miou": 0.831874001578241,
+      "pixel_accuracy": 0.9353684484889414,
+      "road_as_sidewalk": 0.0168991373191327,
+      "sidewalk_as_road": 0.17218993417308645,
+      "per_class_iou": {
+        "Road": 0.9485824616713966,
+        "Sidewalk": 0.6429462539653548,
+        "Boundary": 0.9040932890979716
+      },
+      "road_predicted_as": {
+        "Road": 0.975444223899955,
+        "Sidewalk": 0.0168991373191327,
+        "Boundary": 0.0010369470822290865,
+        "Crosswalk": 0.0,
+        "Other": 0.0066196916986831925
+      },
+      "ci95": {
+        "miou": [
+          0.8198994066154519,
+          0.8447089952551143
+        ],
+        "pixel_accuracy": [
+          0.9301563781433353,
+          0.9404246176342568
+        ],
+        "road_as_sidewalk": [
+          0.014063798512763185,
+          0.019887296476038038
+        ]
+      },
+      "confusion_gt_by_pred": [
+        [
+          84168106,
+          1458175,
+          89475,
+          0,
+          571193
+        ],
+        [
+          2131928,
+          9229669,
+          548101,
+          0,
+          471560
+        ],
+        [
+          311528,
+          515840,
+          49230289,
+          0,
+          3757432
+        ]
+      ]
+    },
+    "fast_scnn_kpv_ft_ep9": {
+      "miou": 0.854434093407976,
+      "pixel_accuracy": 0.9437746217133187,
+      "road_as_sidewalk": 0.018398692020041178,
+      "sidewalk_as_road": 0.12132644356494308,
+      "per_class_iou": {
+        "Road": 0.9570378458640635,
+        "Sidewalk": 0.6911504867956435,
+        "Boundary": 0.9151139475642212
+      },
+      "road_predicted_as": {
+        "Road": 0.9752389669033262,
+        "Sidewalk": 0.018398692020041178,
+        "Boundary": 0.0008641631308577152,
+        "Crosswalk": 0.00033913587557719767,
+        "Other": 0.005159042070197661
+      },
+      "ci95": {
+        "miou": [
+          0.8441674663249262,
+          0.8646590534352607
+        ],
+        "pixel_accuracy": [
+          0.9398305842524218,
+          0.9476213042818744
+        ],
+        "road_as_sidewalk": [
+          0.015186235417991276,
+          0.0217138470317731
+        ]
+      },
+      "confusion_gt_by_pred": [
+        [
+          84150395,
+          1587567,
+          74566,
+          29263,
+          445158
+        ],
+        [
+          1502174,
+          9978255,
+          509270,
+          4307,
+          387252
+        ],
+        [
+          138847,
+          468342,
+          49781215,
+          731,
+          3425954
+        ]
+      ]
+    },
+    "microseg_s800": {
+      "miou": 0.6943766963703871,
+      "pixel_accuracy": 0.9020614297319491,
+      "road_as_sidewalk": 0.0445214605977087,
+      "sidewalk_as_road": 0.4657723795110319,
+      "per_class_iou": {
+        "Road": 0.8633310264993793,
+        "Sidewalk": 0.311531785658575,
+        "Boundary": 0.9082672769532069
+      },
+      "road_predicted_as": {
+        "Road": 0.9430658627181266,
+        "Sidewalk": 0.0445214605977087,
+        "Boundary": 0.010319127171827572,
+        "Crosswalk": 0.002093549512337028,
+        "Other": 0.0
+      },
+      "ci95": {
+        "miou": [
+          0.6845775911518688,
+          0.7043637280230245
+        ],
+        "pixel_accuracy": [
+          0.8967352875035468,
+          0.9073693541450825
+        ],
+        "road_as_sidewalk": [
+          0.04034148443203712,
+          0.04861399660383109
+        ]
+      },
+      "confusion_gt_by_pred": [
+        [
+          81374276,
+          3841621,
+          890406,
+          180646,
+          0
+        ],
+        [
+          5766848,
+          5276407,
+          1333755,
+          4248,
+          0
+        ],
+        [
+          2202373,
+          714099,
+          50898617,
+          0,
+          0
+        ]
+      ],
+      "native_output_grid": {
+        "grid": [
+          96,
+          96
+        ],
+        "miou": 0.6945670789371494,
+        "pixel_accuracy": 0.9020151735236951,
+        "road_as_sidewalk": 0.04450572586945659,
+        "sidewalk_as_road": 0.46768131598776247,
+        "per_class_iou": {
+          "Road": 0.8629399930744188,
+          "Sidewalk": 0.31187331236486465,
+          "Boundary": 0.908887931372165
+        },
+        "road_predicted_as": {
+          "Road": 0.943275025752824,
+          "Sidewalk": 0.04450572586945659,
+          "Boundary": 0.01012889836851849,
+          "Crosswalk": 0.0020903500092009455,
+          "Other": 0.0
+        }
+      }
+    }
+  },
+  "kpv_crosswalk_supplementary": {
+    "fast_scnn_pre_kpv": {
+      "frames": 58,
+      "crosswalk_iou": 0.0,
+      "precision": 0.0,
+      "recall": 0.0
+    },
+    "fast_scnn_kpv_ft_ep9": {
+      "frames": 58,
+      "crosswalk_iou": 0.6889850279645056,
+      "precision": 0.7967637068334604,
+      "recall": 0.8358875956310692
+    },
+    "microseg_s800": {
+      "frames": 58,
+      "crosswalk_iou": 0.7611577357428383,
+      "precision": 0.8129464325298656,
+      "recall": 0.9227690450568354
+    }
+  }
+}

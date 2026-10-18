@@ -177,9 +177,10 @@ def main(argv=None):
                 "19-class predictions go Cityscapes trainId -> PathClear 10 "
                 "(building now Boundary) -> MicroSeg 4; 10-class predictions "
                 "go PathClear 10 -> MicroSeg 4 directly: 1 Sidewalk->0 "
-                "Walkable, 0 Road->1 Non-walkable, 4 Boundary->2 Boundary. "
-                "IDs 2, 3, 5, 6, 7, 8, 9 stay ignored, so Crosswalk is "
-                "structurally absent."
+                "Walkable, 0 Road->1 Non-walkable, 4 Boundary->2 Boundary, "
+                "8 Crosswalk->3 Crosswalk. IDs 2, 3, 5, 6, 7, 9 stay "
+                "ignored. Cityscapes has no Crosswalk truth, so any "
+                "Crosswalk prediction is a false positive."
             ),
         }
     )

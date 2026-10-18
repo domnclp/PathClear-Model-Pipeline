@@ -56,10 +56,10 @@ def make_loss():
     )
 
 
-def compile_pathclear(model):
+def compile_pathclear(model, learning_rate=0.001):
     """Configure future training/evaluation; does not perform optimizer updates."""
     model.compile(
-        optimizer=keras.optimizers.Adam(learning_rate=0.001),
+        optimizer=keras.optimizers.Adam(learning_rate=learning_rate),
         loss=make_loss(), weighted_metrics=make_metrics(NUM_CLASSES),
     )
 

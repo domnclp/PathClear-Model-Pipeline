@@ -1,0 +1,42 @@
+{
+  "fast_scnn": {
+    "checkpoint": "/home/nacsi/pathclear_runs/kpv_ft_final4/inference.keras",
+    "file_bytes": 5138160,
+    "file_kb": 5017.7,
+    "params": 1159546,
+    "input_shape": [
+      512,
+      1024,
+      3
+    ],
+    "latency_cpu_ms": {
+      "runs": 20,
+      "mean_ms": 495.6017705500244,
+      "median_ms": 478.48096849998,
+      "min_ms": 407.8610160001972,
+      "max_ms": 627.2316239999327,
+      "fps_mean": 2.017749046558467,
+      "fps_median": 2.089947282824984
+    }
+  },
+  "microseg": {
+    "checkpoint": "/home/nacsi/microseg_runs/pilot-neg025-s800-augoff-fixed-20261006/best.keras",
+    "file_bytes": 987553,
+    "file_kb": 964.4,
+    "params": 61924,
+    "input_shape": [
+      96,
+      96,
+      3
+    ],
+    "latency_cpu_ms": {
+      "runs": 20,
+      "mean_ms": 156.85283945000492,
+      "median_ms": 147.05119950008338,
+      "min_ms": 116.61969900001168,
+      "max_ms": 244.66459900008886,
+      "fps_mean": 6.375402597150552,
+      "fps_median": 6.800352553393711
+    }
+  }
+}
