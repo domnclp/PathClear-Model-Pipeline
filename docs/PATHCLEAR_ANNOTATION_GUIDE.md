@@ -18,8 +18,8 @@ I use 255 for unsupported content and uncertain regions; I never use Road as a b
 |---|---|---|---|
 | 0 | Road | Vehicle roadway, including ordinary painted lane markings | I give visible crosswalk markings ID 8 and clearly damaged paved areas ID 9. |
 | 1 | Sidewalk | Recognizable pedestrian pavement, paved footpaths, curb ramps, and the visible curb edge | I do not infer that an unmarked roadway shoulder is a sidewalk just because people walk there. |
-| 2 | Person | Visible people, including riders and carried clothing/bags where inseparable from the person silhouette | I label the visible motorcycle or bicycle separately as Vehicle. |
-| 3 | Vehicle | Cars, jeepneys, buses, trucks, trains, motorcycles, bicycles, and recognizable motorized or pedal tricycles | I do not infer whether the vehicle is moving; parked vehicles use the same ID. |
+| 2 | Person | Visible pedestrians, including carried clothing/bags where inseparable from the person silhouette | I label riders as Vehicle together with the vehicle they ride (decision 2026-10-20). |
+| 3 | Vehicle | Cars, jeepneys, buses, trucks, trains, motorcycles, bicycles, recognizable motorized or pedal tricycles, and the riders on them | I do not infer whether the vehicle is moving; parked vehicles use the same ID. |
 | 4 | Boundary | Walls, fences, gates, and railings that form a visible barrier | I ignore building facades rather than relabel all buildings as Boundary. |
 | 5 | Obstacle | Discrete objects such as poles, traffic lights/signs, bollards, cones, bins, boxes, loose debris, and distinguishable freestanding stall structures | I use a more specific class for people, vehicles, vegetation, barriers, stairs, or damaged pavement. |
 | 6 | Vegetation | Trees, visible trunks, shrubs, grass, and plants, including plants growing into a path | I do not change vegetation to Obstacle based on its location. |
@@ -44,7 +44,7 @@ My semantic masks lose the underlying Road/Sidewalk identity wherever I label Un
 
 ## Difficult Philippine street examples
 
-- I split a rider and tricycle into Person and Vehicle along their visible edges.
+- I label a rider and the tricycle, motorcycle, or bicycle they ride together as one Vehicle region.
 - I distinguish freestanding stall objects from building facades; I leave an ambiguous attached frontage at 255 for review.
 - I label a container as Obstacle and its plant as Vegetation where both are distinguishable.
 - I keep a puddle or wet reflection at 255 when it obscures the underlying surface; water alone is not evidence of uneven pavement.
