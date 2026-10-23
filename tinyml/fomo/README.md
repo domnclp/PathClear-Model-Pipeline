@@ -1,5 +1,9 @@
 # My Cityscapes FOMO baseline
 
+> **Note (2026-10-23):** MicroSeg was later dropped.
+> Standalone mode is FOMO + ToF only.
+> References to MicroSeg below are historical.
+
 I am training a separate standalone Person/Vehicle baseline on `tinyml-fomo`.
 All experiment code and outputs stay under `tinyml/fomo/`.
 I keep the Fast-SCNN pipeline, original Cityscapes files, and earlier model checkpoints unchanged.

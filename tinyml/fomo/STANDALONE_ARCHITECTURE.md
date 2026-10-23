@@ -1,5 +1,9 @@
 # My PathClear standalone architecture
 
+> **Note (2026-10-23):** MicroSeg was later dropped.
+> Standalone mode is FOMO + ToF only.
+> References to MicroSeg below are historical.
+
 I finalized this architecture on 2026-10-04.
 I keep the phone's Fast-SCNN pipeline as the primary full semantic-segmentation system.
 My standalone glasses are a reduced fallback and do not need to match the phone's ten-class capability.

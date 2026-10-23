@@ -51,5 +51,5 @@ I first agree object definitions, annotation format, input geometry, target boar
 I transform annotations with the same resize/crop geometry as images and check whether small or adjacent objects remain distinguishable.
 I then measure quantized accuracy, memory use, camera integration, and latency on the actual board.
 ESP32 and ESP32-S3 are candidates, not verified deployment targets for this project.
-There is no FOMO trainer, converter, dependency environment, or firmware implementation in this scaffold yet.
+The FOMO pipeline lives on the `tinyml-fomo` branch, starting from [tinyml/fomo/README.md](../tinyml/fomo/README.md).
 I start with [tinyml/README.md](../tinyml/README.md) before selecting tooling or collecting annotations.
