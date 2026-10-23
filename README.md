@@ -1,5 +1,8 @@
 # PathClear
 
+> **Note (2026-10-23):** I keep MicroSeg only as the thesis comparison baseline (see [docs/thesis/MODEL_TRADEOFF_RESULTS.md](docs/thesis/MODEL_TRADEOFF_RESULTS.md)).
+> It is not deployed.
+
 I use Fast-SCNN for semantic segmentation and keep the TinyML experiment separate.
 The 19-class Cityscapes baseline, ten-class adaptation, local-label validation, and TFLite tools share the core modules below.
 
@@ -43,7 +46,7 @@ I retain the separate Windows and WSL environments rather than reinstalling Tens
 
 I start with [dataset setup](docs/DATASET_SETUP.md), [pipeline responsibilities](docs/TRAINING_PIPELINE.md), [training commands](docs/TRAINING.md), and [WSL GPU setup](docs/WSL_GPU.md).
 I follow the [local dataset plan](docs/LOCAL_DATASET_PLAN.md) and [annotation guide](docs/PATHCLEAR_ANNOTATION_GUIDE.md) before local fine-tuning.
-The [TinyML scaffold](tinyml/README.md) has no implemented trainer or firmware yet.
+The FOMO pipeline lives on the `tinyml-fomo` branch, starting from [tinyml/fomo/README.md](https://github.com/slvr123/PathClear-Model-Pipeline/blob/tinyml-fomo/tinyml/fomo/README.md).
 The separate [MicroSeg custom CNN plan](docs/MICROSEG_CUSTOM_CNN_PLAN.md) describes one four-class lightweight segmentation model trained from Cityscapes and Kaggle Crosswalk batches. The [MicroSeg onboarding handoff](docs/MICROSEG_ONBOARDING.md) summarizes the current status and next decisions. A fresh five-epoch GroupNormalization pilot no longer produced all-Non-walkable inference predictions: Cityscapes validation reached 0.313 four-class mean IoU, while held-out positive-only Crosswalk recall peaked at 92.6% and ended at 76.0%. The Crosswalk metric cannot measure false positives because unmarked KPV pixels are ignored; Boundary IoU is also still low. MicroSeg uses GroupNormalization, while Fast-SCNN retains its BatchNormalization behavior. Do not scale training until Boundary semantics and Crosswalk-negative validation are addressed. The pipeline supports sparse, reviewed Cityscapes ignore masks; use `scripts.select_cityscapes_candidates` to rank possible scenes and the [annotation guide](docs/MICROSEG_CITYSCAPES_ANNOTATION.md) with `scripts.annotate_cityscapes_ignore` to verify them. A 50-image audit of the original rejected queue found 14 missed crossings, prompting an adaptive-contrast/transverse-band selector revision. The revised queue has 1,127 new training candidates after carrying prior review progress. Deployment is not implemented.
 
 I leave checkpoints, archived deployment sources, datasets, and generated outputs in their existing locations.

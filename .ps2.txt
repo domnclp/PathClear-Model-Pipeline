@@ -1,2 +1,0 @@
-   1254    1349  0.0 bash -lc cd /mnt/c/Users/ALLAN/dev/PathClear-Model-Pipeline && bash run_wsl.sh -m unittest discover -s tests -p test_microseg*.py > /mnt/c/Users/ALLAN/dev/PathClear-Model-Pipeline/.full3.txt 2>&1; echo EXIT=$? >> /mnt/c/Users/ALLAN/dev/PathClear-Model-Pipeline/.full3.txt; echo ok
-   1263    1349  152 python -m unittest discover -s tests -p test_microseg*.py

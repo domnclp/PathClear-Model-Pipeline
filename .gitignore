@@ -51,3 +51,5 @@ desktop.ini
 /cityscapes_check.png
 # Personal working notes and exported reports; kept locally, not in Git.
 /docs/notes/
+# Console captures from local test and probe runs; kept out of Git.
+/.*.txt
