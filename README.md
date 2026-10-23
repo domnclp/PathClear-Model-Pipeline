@@ -42,7 +42,7 @@ I retain the separate Windows and WSL environments rather than reinstalling Tens
 
 I start with [dataset setup](docs/DATASET_SETUP.md), [pipeline responsibilities](docs/TRAINING_PIPELINE.md), [training commands](docs/TRAINING.md), and [WSL GPU setup](docs/WSL_GPU.md).
 I follow the [local dataset plan](docs/LOCAL_DATASET_PLAN.md) and [annotation guide](docs/PATHCLEAR_ANNOTATION_GUIDE.md) before local fine-tuning.
-The [TinyML scaffold](tinyml/README.md) has no implemented trainer or firmware yet.
+The FOMO pipeline lives on the `tinyml-fomo` branch, starting from [tinyml/fomo/README.md](https://github.com/slvr123/PathClear-Model-Pipeline/blob/tinyml-fomo/tinyml/fomo/README.md).
 
 I leave checkpoints, archived deployment sources, datasets, and generated outputs in their existing locations.
 This reorganization does not authorize additional training.
